@@ -1,0 +1,6 @@
+@ProjectTalaria.DataPlane.Streamer_HostAddress = http://localhost:5078
+
+GET {{ProjectTalaria.DataPlane.Streamer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

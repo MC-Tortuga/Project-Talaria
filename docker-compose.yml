@@ -1,0 +1,60 @@
+# WARNING: This configuration is for LOCAL DEVELOPMENT ONLY.
+# - Uses HTTP (TLS must be terminated at the ingress/load balancer in production)
+# - Local file storage is used (not suitable for ephemeral containers in production)
+# - Dev test token endpoint is enabled
+
+version: '3.8'
+
+services:
+  controlplane:
+    build:
+      context: ./src
+      dockerfile: ProjectTalaria.ControlPlane.Api/Dockerfile
+    container_name: talaria-controlplane
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__TalariaDb=Data Source=/app/data/talaria.db
+      - Storage__UseLocal=true
+      - Dev__EnableTestTokenEndpoint=true
+      - Jwt__DevSecret=super-secret-key-for-interview-demo-32-bytes
+      - Streamer__BaseUrl=http://localhost:5001
+    volumes:
+      - talaria_data:/app/data
+    healthcheck:
+      test: curl -sf http://localhost:5000/health/live || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  dataplane:
+    build:
+      context: ./src
+      dockerfile: ProjectTalaria.DataPlane.Streamer/Dockerfile
+    container_name: talaria-dataplane
+    ports:
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_URLS=http://+:5001
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__TalariaDb=Data Source=/app/data/talaria.db
+      - Storage__UseLocal=true
+      - Storage__LocalPath=/app/statements
+    volumes:
+      - talaria_data:/app/data
+      - talaria_statements:/app/statements
+    healthcheck:
+      test: curl -sf http://localhost:5001/health/live || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      - controlplane
+
+volumes:
+  talaria_data:
+  talaria_statements:

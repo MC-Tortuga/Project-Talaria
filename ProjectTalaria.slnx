@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ProjectTalaria.Application/ProjectTalaria.Application.csproj" />
+    <Project Path="src/ProjectTalaria.ControlPlane.Api/ProjectTalaria.ControlPlane.Api.csproj" />
+    <Project Path="src/ProjectTalaria.DataPlane.Streamer/ProjectTalaria.DataPlane.Streamer.csproj" />
+    <Project Path="src/ProjectTalaria.Domain/ProjectTalaria.Domain.csproj" />
+    <Project Path="src/ProjectTalaria.Infrastructure/ProjectTalaria.Infrastructure.csproj" />
+    <Project Path="src/ProjectTalaria.Shared/ProjectTalaria.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ProjectTalaria.Tests.Unit/ProjectTalaria.Tests.Unit.csproj" />
+  </Folder>
+</Solution>

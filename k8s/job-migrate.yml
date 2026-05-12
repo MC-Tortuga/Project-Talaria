@@ -1,0 +1,44 @@
+# Run database migrations as a Kubernetes Job before deploying the main application.
+# Apply with:
+#   kubectl apply -f k8s/job-migrate.yml
+#
+# Migration strategy options:
+# 1. **InitContainer** (recommended): Add this as an initContainer in the deployment
+# 2. **Kubernetes Job**: Run separately before deployment
+# 3. **Helm hook**: If using Helm, use a pre-install hook
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: talaria-db-migrate
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: migrate
+        # Use the same image as the controlplane, but override the entrypoint
+        image: talaria/controlplane:latest
+        command: ["dotnet", "exec"]
+        args:
+          - "--roll-forward-on-no-candidate-fx"
+          - "2"
+          - "/app/ProjectTalaria.ControlPlane.Api.dll"
+          # EF Core migrate can be triggered via a custom approach,
+          # or the app can auto-migrate on startup via Database.Migrate()
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        - name: ConnectionStrings__TalariaDb
+          valueFrom:
+            secretKeyRef:
+              name: talaria-db-secret
+              key: connection-string
+        - name: Storage__UseLocal
+          value: "false"
+        - name: AWS__Region
+          value: "us-east-1"

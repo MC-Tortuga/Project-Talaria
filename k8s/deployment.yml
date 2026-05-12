@@ -1,0 +1,152 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: talaria-controlplane
+  labels:
+    app: talaria
+    component: controlplane
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: talaria
+      component: controlplane
+  template:
+    metadata:
+      labels:
+        app: talaria
+        component: controlplane
+    spec:
+      containers:
+      - name: controlplane
+        image: talaria/controlplane:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        - name: ConnectionStrings__TalariaDb
+          valueFrom:
+            secretKeyRef:
+              name: talaria-db-secret
+              key: connection-string
+        - name: Storage__UseLocal
+          value: "false"
+        - name: AWS__Region
+          value: "us-east-1"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: talaria-controlplane
+spec:
+  selector:
+    app: talaria
+    component: controlplane
+  ports:
+  - port: 80
+    targetPort: 5000
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: talaria-dataplane
+  labels:
+    app: talaria
+    component: dataplane
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: talaria
+      component: dataplane
+  template:
+    metadata:
+      labels:
+        app: talaria
+        component: dataplane
+    spec:
+      containers:
+      - name: dataplane
+        image: talaria/dataplane:latest
+        ports:
+        - containerPort: 5001
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        - name: ConnectionStrings__TalariaDb
+          valueFrom:
+            secretKeyRef:
+              name: talaria-db-secret
+              key: connection-string
+        - name: Storage__UseLocal
+          value: "false"
+        - name: AWS__Region
+          value: "us-east-1"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 5001
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 5001
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: talaria-dataplane
+spec:
+  selector:
+    app: talaria
+    component: dataplane
+  ports:
+  - port: 80
+    targetPort: 5001
+  type: ClusterIP
+---
+# IMPORTANT: The connection string has been moved to Kubernetes Secrets.
+# Before deploying, create the secret with:
+#   kubectl create secret generic talaria-db-secret \
+#     --from-literal=connection-string="Server=talaria-db;Database=Talaria;User=sa;YourStrong!Passw0rd"
+#
+# For production, use a managed secret store: HashiCorp Vault, AWS Secrets Manager, or Azure Key Vault.
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: talaria-db-secret
+type: Opaque
+stringData:
+  connection-string: "Server=talaria-db;Database=Talaria;User=sa;Password=CHANGE_ME"
