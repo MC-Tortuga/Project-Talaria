@@ -6,6 +6,24 @@
 version: '3.8'
 
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: talaria-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=talaria
+      - MYSQL_USER=talaria
+      - MYSQL_PASSWORD=talariapassword
+    volumes:
+      - talaria_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   controlplane:
     build:
       context: ./src
@@ -16,7 +34,7 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:5000
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__TalariaDb=Data Source=/app/data/talaria.db
+      - ConnectionStrings__TalariaDb=Server=mysql;Port=3306;Database=talaria;User=talaria;Password=talariapassword;
       - Storage__UseLocal=true
       - Dev__EnableTestTokenEndpoint=true
       - Jwt__DevSecret=super-secret-key-for-interview-demo-32-bytes
@@ -29,6 +47,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    depends_on:
+      mysql:
+        condition: service_healthy
 
   dataplane:
     build:
@@ -40,7 +61,7 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:5001
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__TalariaDb=Data Source=/app/data/talaria.db
+      - ConnectionStrings__TalariaDb=Server=mysql;Port=3306;Database=talaria;User=talaria;Password=talariapassword;
       - Storage__UseLocal=true
       - Storage__LocalPath=/app/statements
     volumes:
@@ -58,3 +79,4 @@ services:
 volumes:
   talaria_data:
   talaria_statements:
+  talaria_mysql_data:

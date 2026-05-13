@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using MySql.EntityFrameworkCore;
 using ProjectTalaria.ControlPlane.Api.Endpoints;
 using ProjectTalaria.ControlPlane.Api.HealthChecks;
 using ProjectTalaria.ControlPlane.Api.Middleware;
@@ -18,9 +19,6 @@ using ProjectTalaria.Domain.Entities;
 using ProjectTalaria.Infrastructure.CDN;
 using ProjectTalaria.Infrastructure.Data;
 using ProjectTalaria.Infrastructure.Security;
-using Serilog;
-using Serilog.Events;
-using Serilog.Formatting.Json;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
@@ -47,14 +45,8 @@ authBuilder.AddJwtBearer("dev", options =>
     };
 });
 
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-    .Enrich.FromLogContext()
-    .Enrich.WithProperty("Application", "ControlPlane")
-    .WriteTo.Console(new JsonFormatter())
-    .CreateLogger();
-
-builder.Host.UseSerilog();
+builder.Logging.AddConsole();
+builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
 var oauthAuthority = builder.Configuration["Auth:OAuth:Authority"];
 var oauthClientId = builder.Configuration["Auth:OAuth:ClientId"];
@@ -104,13 +96,7 @@ if (!string.IsNullOrEmpty(oauthAuthority) && !oauthAuthority.StartsWith("${") &&
 var connectionString = builder.Configuration.GetConnectionString("TalariaDb")
     ?? throw new InvalidOperationException("Missing TalariaDb connection string");
 builder.Services.AddDbContext<TalariaDbContext>(options =>
-{
-    if (connectionString.Contains(".db", StringComparison.OrdinalIgnoreCase)
-        || connectionString.Contains("sqlite", StringComparison.OrdinalIgnoreCase))
-        options.UseSqlite(connectionString);
-    else
-        options.UseSqlServer(connectionString);
-});
+    options.UseMySQL(connectionString));
 
 var useLocalMode = builder.Configuration["Storage:UseLocal"]?.ToLower() == "true" ||
                    builder.Configuration["Dev:EnableTestTokenEndpoint"]?.ToLower() == "true";
@@ -177,10 +163,14 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
-//Serilog
-app.UseSerilogRequestLogging(options =>
+app.Use(async (context, next) =>
 {
-    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    var stopwatch = Stopwatch.StartNew();
+    await next();
+    stopwatch.Stop();
+    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("HTTP {Method} {Path} responded {StatusCode} in {ElapsedMs}ms",
+        context.Request.Method, context.Request.Path, context.Response.StatusCode, stopwatch.ElapsedMilliseconds);
 });
 
 // Correlation ID middleware for request tracing

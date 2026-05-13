@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using MySql.EntityFrameworkCore;
 using ProjectTalaria.Domain.Entities;
 
 namespace ProjectTalaria.Infrastructure.Data;
@@ -35,14 +36,7 @@ public class TalariaDbContext : DbContext
         {
             if (_connectionString != null)
             {
-                var isSqlite = _connectionString.Contains(".db", StringComparison.OrdinalIgnoreCase)
-                    || _connectionString.Contains("sqlite", StringComparison.OrdinalIgnoreCase)
-                    || _connectionString.Contains("InMemory", StringComparison.OrdinalIgnoreCase);
-
-                if (isSqlite)
-                    optionsBuilder.UseSqlite(_connectionString);
-                else
-                    optionsBuilder.UseSqlServer(_connectionString);
+                optionsBuilder.UseMySQL(_connectionString);
             }
         }
     }

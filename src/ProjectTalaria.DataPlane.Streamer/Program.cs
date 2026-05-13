@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using MySql.EntityFrameworkCore;
 using ProjectTalaria.Domain.Interfaces;
 using ProjectTalaria.Infrastructure.Data;
 using ProjectTalaria.Infrastructure.Storage;
@@ -31,13 +32,7 @@ if (!useLocalStorage)
 var connectionString = builder.Configuration.GetConnectionString("TalariaDb")
     ?? throw new InvalidOperationException("Missing TalariaDb connection string");
 builder.Services.AddDbContext<TalariaDbContext>(options =>
-{
-    if (connectionString.Contains(".db", StringComparison.OrdinalIgnoreCase)
-        || connectionString.Contains("sqlite", StringComparison.OrdinalIgnoreCase))
-        options.UseSqlite(connectionString);
-    else
-        options.UseSqlServer(connectionString);
-});
+    options.UseMySQL(connectionString));
 
 if (useLocalStorage)
 {

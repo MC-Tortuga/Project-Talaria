@@ -15,14 +15,14 @@ namespace ProjectTalaria.Infrastructure.Migrations
                 name: "AccessTokens",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    TokenValue = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
-                    UserId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    DocumentId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    ExpiresAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UsedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
+                    TokenValue = table.Column<string>(type: "varchar(64)", maxLength: 64, nullable: false),
+                    UserId = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
+                    DocumentId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UsedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -33,13 +33,13 @@ namespace ProjectTalaria.Infrastructure.Migrations
                 name: "AuditLogs",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    UserId = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    DocumentId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    Action = table.Column<int>(type: "INTEGER", nullable: false),
-                    IpAddress = table.Column<string>(type: "TEXT", maxLength: 45, nullable: true),
-                    Timestamp = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Details = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: true)
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
+                    UserId = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
+                    DocumentId = table.Column<Guid>(type: "char(36)", nullable: true),
+                    Action = table.Column<int>(type: "int", nullable: false),
+                    IpAddress = table.Column<string>(type: "varchar(45)", maxLength: 45, nullable: true),
+                    Timestamp = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Details = table.Column<string>(type: "varchar(1000)", maxLength: 1000, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -50,11 +50,11 @@ namespace ProjectTalaria.Infrastructure.Migrations
                 name: "BankStatements",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AccountNumber = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    StatementDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    S3Key = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
-                    EncryptedDataKey = table.Column<byte[]>(type: "BLOB", nullable: false)
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
+                    AccountNumber = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false),
+                    StatementDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    S3Key = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false),
+                    EncryptedDataKey = table.Column<byte[]>(type: "longblob", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -65,10 +65,10 @@ namespace ProjectTalaria.Infrastructure.Migrations
                 name: "Permissions",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Resource = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Action = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
+                    Resource = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
+                    Action = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "longtext", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -79,9 +79,9 @@ namespace ProjectTalaria.Infrastructure.Migrations
                 name: "Roles",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
+                    Name = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "longtext", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -92,13 +92,13 @@ namespace ProjectTalaria.Infrastructure.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
-                    PasswordHash = table.Column<string>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    LastLoginAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
+                    Email = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false),
+                    Name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false),
+                    PasswordHash = table.Column<string>(type: "longtext", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    LastLoginAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -109,9 +109,9 @@ namespace ProjectTalaria.Infrastructure.Migrations
                 name: "RolePermissions",
                 columns: table => new
                 {
-                    RoleId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    PermissionId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AssignedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    RoleId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    PermissionId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    AssignedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -134,14 +134,14 @@ namespace ProjectTalaria.Infrastructure.Migrations
                 name: "ApiKeys",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    KeyHash = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    ExpiresAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    RevokedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    LastUsedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
+                    KeyHash = table.Column<string>(type: "varchar(64)", maxLength: 64, nullable: false),
+                    UserId = table.Column<Guid>(type: "char(36)", nullable: true),
+                    Name = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    RevokedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    LastUsedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -158,10 +158,10 @@ namespace ProjectTalaria.Infrastructure.Migrations
                 name: "UserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    RoleId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AssignedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    AssignedBy = table.Column<string>(type: "TEXT", nullable: true)
+                    UserId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    RoleId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    AssignedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    AssignedBy = table.Column<string>(type: "varchar(100)", nullable: true)
                 },
                 constraints: table =>
                 {
