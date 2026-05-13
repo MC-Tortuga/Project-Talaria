@@ -3,9 +3,17 @@ using ProjectTalaria.Domain.Interfaces;
 
 namespace ProjectTalaria.Infrastructure.Storage;
 
-public class LocalFileStorageProvider(IConfiguration config) : IStorageProvider
+public class LocalFileStorageProvider : IStorageProvider
 {
-    private readonly string _basePath = config["Storage:LocalPath"] ?? "statements";
+    private readonly string _basePath;
+
+    public LocalFileStorageProvider(IConfiguration config)
+    {
+        var configuredPath = config["Storage:LocalPath"];
+        _basePath = string.IsNullOrWhiteSpace(configuredPath)
+            ? AppContext.BaseDirectory
+            : configuredPath;
+    }
 
     public async Task<Stream> GetFileStreamAsync(string blobName, CancellationToken ct = default)
     {

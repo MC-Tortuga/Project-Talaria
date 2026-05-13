@@ -20,4 +20,8 @@
     <ProjectReference Include="..\ProjectTalaria.Shared\ProjectTalaria.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="statements\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
