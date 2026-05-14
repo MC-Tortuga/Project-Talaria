@@ -206,6 +206,24 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine("Seeded 10 test statements");
     }
 
+    var localPath = builder.Configuration["Storage:LocalPath"] ?? Path.Combine(AppContext.BaseDirectory, "statements");
+    var s3Key = db.BankStatements.FirstOrDefault()?.S3Key;
+    if (!string.IsNullOrEmpty(s3Key))
+    {
+        var statementsDir = Path.Combine(localPath, "statements");
+        if (!Directory.Exists(statementsDir))
+        {
+            Directory.CreateDirectory(statementsDir);
+            for (int i = 1; i <= 10; i++)
+            {
+                var pdfPath = Path.Combine(statementsDir, $"statement-{i}.pdf");
+                var pdfContent = GenerateSamplePdf($"Sample Bank Statement {i}", $"Account ACC{i:D3}", DateTime.Now.AddDays(-i));
+                File.WriteAllBytes(pdfPath, pdfContent);
+                Console.WriteLine($"Created: {pdfPath}");
+            }
+        }
+    }
+
     await IamSeeder.SeedAsync(db);
 }
 
@@ -277,10 +295,41 @@ if (app.Environment.IsDevelopment())
         });
     }
 }
-// Keep the app running by ignoring SIGINT in background mode
-Console.CancelKeyPress += (sender, e) =>
+
+static byte[] GenerateSamplePdf(string title, string account, DateTime date)
 {
-    e.Cancel = true;
-};
+    using var ms = new MemoryStream();
+    var writer = new StreamWriter(ms);
+    writer.WriteLine("%PDF-1.4");
+    writer.WriteLine("1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj");
+    writer.WriteLine("2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj");
+    writer.WriteLine("3 0 obj<</Type/Page/MediaBox[0 0 612 792]/Parent 2 0 R/Resources<</Font<</F1 4 0 R>>>>/Contents 5 0 R>>endobj");
+    writer.WriteLine("4 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj");
+    var content = $"BT /F1 24 Tf 100 700 Td ({title}) Tj ET BT /F1 14 Tf 100 660 Td (Account: {account}) Tj ET BT /F1 12 Tf 100 630 Td (Date: {date:yyyy-MM-dd}) Tj ET BT /F1 12 Tf 100 600 Td (Sample bank statement content for testing.) Tj ET";
+    var bytes = System.Text.Encoding.ASCII.GetBytes(content);
+    writer.WriteLine($"5 0 obj<</Length {bytes.Length}>>");
+    writer.WriteLine("stream");
+    writer.Write(content);
+    writer.WriteLine("endstream endobj");
+    writer.WriteLine("xref 0 6");
+    writer.WriteLine("0 1");
+    writer.WriteLine("0000000000 65535 f ");
+    writer.WriteLine("1 1");
+    writer.WriteLine("0000000009 00000 n ");
+    writer.WriteLine("2 1");
+    writer.WriteLine("0000000058 00000 n ");
+    writer.WriteLine("3 1");
+    writer.WriteLine("0000000115 00000 n ");
+    writer.WriteLine("4 1");
+    writer.WriteLine("0000000206 00000 n ");
+    writer.WriteLine("5 1");
+    writer.WriteLine("0000000267 00000 n ");
+    writer.WriteLine("trailer<</Size 6/Root 1 0 R>>");
+    writer.WriteLine("startxref");
+    writer.WriteLine("0");
+    writer.WriteLine("%%EOF");
+    writer.Flush();
+    return ms.ToArray();
+}
 
 app.Run();

@@ -39,8 +39,10 @@ services:
       - Dev__EnableTestTokenEndpoint=true
       - Jwt__DevSecret=super-secret-key-for-interview-demo-32-bytes
       - Streamer__BaseUrl=http://localhost:5001
+      - Storage__LocalPath=/app/statements
     volumes:
       - talaria_data:/app/data
+      - talaria_statements:/app/statements
     healthcheck:
       test: curl -sf http://localhost:5000/health/live || exit 1
       interval: 30s
