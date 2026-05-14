@@ -93,7 +93,7 @@ public static class StreamEndpoints
              : await GetDecryptedStreamAsync(storage, kms!, statement.S3Key, statement.EncryptedDataKey);
 
          fileStream.Position = 0;
-         return Results.Stream(fileStream, "application/pdf");
+         return Results.Stream(fileStream, "application/pdf", $"statement-{statementId}.pdf", enableRangeProcessing: true);
      }
      catch (Exception ex)
      {
